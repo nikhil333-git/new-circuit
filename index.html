@@ -1,97 +1,157 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Login Form</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://kit.fontawesome.com/97ebdf5864.js" crossorigin="anonymous"></script>
+    <title>Login - Plant Monitoring System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://kit.fontawesome.com/97ebdf5864.js');
+            background-size: cover;
+            background-position: center;
+            background-color: #0d0808;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+        }
+        .overlay {
+            background-color: rgba(0, 0, 0, 0.6);
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            backdrop-filter: blur(5px);
+        }
+        .container {
+            width: 350px;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            transition: transform 0.3s ease-in-out;
+        }
+        .container:hover {
+            transform: scale(1.05);
+        }
+        h2 {
+            margin: 0 0 20px 0;
+            font-size: 24px;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        a:hover {
+            color: #0056b3;
+        }
+        /* About button */
+        .about-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #26b979;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .about-button:hover {
+            background-color: #1e8f63;
+        }
+        /* Admin button */
+        .admin-button {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #060408;
+        }
+        /* Countdown timer */
+        .countdown {
+            margin-top: 10px;
+            color: red;
+        }
+    </style>
 </head>
 <body>
+    <div class="overlay"></div>
+    <a href="about.html" class="about-button">About</a>
     <div class="container">
         <h2>Login</h2>
-        <form id="loginForm" onsubmit="return handleLogin(event)">
-            <div class="form-group">
-                <input type="email" id="email" required>
-                <label for="email">Email</label>
-                <i class="fa-solid fa-envelope"></i>
-            </div>
-            <div class="form-group">
-                <input type="password" id="password" required>
-                <label for="password">Password</label>
-                <i class="fa-solid fa-lock"></i>
-            </div>
-            <p><input type="checkbox">Remember Me <a href="#">Forget Password</a></p>
-            <input id="btn" type="submit" value="Login">
-            <p>Don't have an account? <a href="#" onclick="showRegisterForm()">Register</a></p>
-        </form>
-        <!-- Register Form -->
-        <form id="registerForm" onsubmit="return handleRegister(event)" style="display: none;">
-            <div class="form-group">
-                <input type="email" id="registerEmail" required>
-                <label for="registerEmail">Email</label>
-                <i class="fa-solid fa-envelope"></i>
-            </div>
-            <div class="form-group">
-                <input type="password" id="registerPassword" required>
-                <label for="registerPassword">Password</label>
-                <i class="fa-solid fa-lock"></i>
-            </div>
-            <input id="btn" type="submit" value="Register">
-            <p>Already have an account? <a href="#" onclick="showLoginForm()">Login</a></p>
-        </form>
+        <input type="text" id="username" placeholder="Username or Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button id="loginButton" onclick="login()">Login</button>
+        <div id="countdown" class="countdown"></div>
+        <a href="register.html">Don't have an account? Register</a>
+    
+
     </div>
+
     <script>
-        async function handleLogin(event) {
-            event.preventDefault();
-            console.log('Login form submitted'); // Check if this is logged
-            const email = document.getElementById('email').value;
+        let attempts = parseInt(localStorage.getItem('attempts')) || 0;
+    
+        function login() {
+            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const response = await fetch('http://localhost:3003/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            });
-            const result = await response.json();
-            if (response.status === 200) {
-                window.location.href = 'home.html'; // Redirect to home page on successful login
-            } else {
-                alert(result.message || 'Login failed');
+
+            let users = JSON.parse(localStorage.getItem('users')) || {};
+            let loggedIn = false;
+
+            for (let user in users) {
+                if ((user === username || users[user].email === username) && users[user].password === password) {
+                    loggedIn = true;
+                    break;
+                }
             }
-        }
 
-        async function handleRegister(event) {
-            event.preventDefault();
-            console.log('Register form submitted'); // Check if this is logged
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const response = await fetch('http://localhost:3003/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            });
-            if (response.ok) {
-                alert('User registered successfully');
-                showLoginForm();
-            } else {
-                alert('Registration failed');
-            }
-        }
-
-        function showRegisterForm() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('registerForm').style.display = 'block';
-        }
-
-        function showLoginForm() {
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('registerForm').style.display = 'none';
+            if (loggedIn) {
+                alert('Login successful!');
+                window.location.href = 'home.html'; // Redirect to home page
+            } 
         }
     </script>
+    
 </body>
 </html>
