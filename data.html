@@ -1,0 +1,160 @@
+<data.html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Smart AgroBot - Home</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+            }
+            header {
+                background-color: #4CAF50;
+                color: white;
+                padding: 15px 0;
+                text-align: center;
+            }
+            nav {
+                display: flex;
+                justify-content: center;
+                background-color: #333;
+            }
+            nav a {
+                color: white;
+                padding: 14px 20px;
+                text-decoration: none;
+                text-align: center;
+            }
+            nav a:hover {
+                background-color: #ddd;
+                color: black;
+            }
+            .content {
+                padding: 20px;
+                text-align: left;
+            }
+            .tab {
+                overflow: hidden;
+                border: 1px solid #ccc;
+                background-color: #f1f1f1;
+            }
+            .tab button {
+                background-color: inherit;
+                float: left;
+                border: none;
+                outline: none;
+                cursor: pointer;
+                padding: 14px 16px;
+                transition: 0.3s;
+            }
+            .tab button:hover {
+                background-color: #ddd;
+            }
+            .tab button.active {
+                background-color: #ccc;
+            }
+            .tabcontent {
+                display: none;
+                padding: 20px;
+                border: 1px solid #ccc;
+                border-top: none;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Smart AgroBot - Home</h1>
+        </header>
+        <nav>
+            <a href="home.html">Home</a>
+            <a href="data.html">Data</a>
+            <a href="#contact">Contact</a>
+        </nav>
+        <div class="content">
+            <h2>Welcome to Smart AgroBot</h2>
+            <p>Your go-to solution for smart agriculture.</p>
+    
+            <div class="tab">
+                <button class="tablinks" onclick="openTab(event, 'UltrasonicSensor')" id="defaultOpen">Ultrasonic Sensor</button>
+                <button class="tablinks" onclick="openTab(event, 'SoilMoisture')">Soil Moisture</button>
+                <button class="tablinks" onclick="openTab(event, 'DHT11')">DHT11</button>
+            </div>
+    
+            <div id="UltrasonicSensor" class="tabcontent">
+                <h3>Ultrasonic Sensor</h3>
+                <p>Details about Ultrasonic Sensor...</p>
+                <div id="ultrasonicData"></div> <!-- Added to display ThingSpeak data -->
+            </div>
+    
+            <div id="SoilMoisture" class="tabcontent">
+                <h3>Soil Moisture</h3>
+                <p>Details about Soil Moisture...</p>
+            </div>
+    
+            <div id="DHT11" class="tabcontent">
+                <h3>DHT11</h3>
+                <p>Details about DHT11 sensor readings:</p>
+                <div id="dht11Data"></div> <!-- Added to display DHT11 data -->
+            </div>
+        </div>
+    
+        <script>
+            function openTab(evt, tabName) {
+                var i, tabcontent, tablinks;
+                tabcontent = document.getElementsByClassName("tabcontent");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = "none";
+                }
+                tablinks = document.getElementsByClassName("tablinks");
+                for (i = 0; i < tablinks.length; i++) {
+                    tablinks[i].className = tablinks[i].className.replace(" active", "");
+                }
+                document.getElementById(tabName).style.display = "block";
+                evt.currentTarget.className += " active";
+            }
+    
+            // Get the element with id="defaultOpen" and click on it
+            document.getElementById("defaultOpen").click();
+    
+            // Fetch data from ThingSpeak for Ultrasonic Sensor
+            async function fetchThingSpeakData() {
+                const channelId = '2701122'; // Replace with your ThingSpeak channel ID
+                const readApiKey = 'Z5WET7P4J5JO8NU1'; // Replace with your ThingSpeak Read API key
+                const url = `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${readApiKey}&results=5`;
+    
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    const feeds = data.feeds;
+                    
+                    // Display Ultrasonic Sensor data (field1)
+                    let ultrasonicData = "<h4>Latest Ultrasonic Sensor Readings:</h4><ul>";
+                    feeds.forEach(feed => {
+                        ultrasonicData += `<li>Distance: ${feed.field1} cm at ${feed.created_at}</li>`;
+                    });
+                    ultrasonicData += "</ul>";
+                    document.getElementById("ultrasonicData").innerHTML = ultrasonicData;
+    
+                    // Display DHT11 data (field2 for temperature, field3 for humidity)
+                    let dht11Data = "<h4>Latest DHT11 Readings:</h4><ul>";
+                    feeds.forEach(feed => {
+                        dht11Data += `<li>Temperature: ${feed.field2} °C, Humidity: ${feed.field3}% at ${feed.created_at}</li>`;
+                    });
+                    dht11Data += "</ul>";
+                    document.getElementById("dht11Data").innerHTML = dht11Data;
+    
+                } catch (error) {
+                    document.getElementById("ultrasonicData").innerHTML = "<p>Error fetching data from ThingSpeak.</p>";
+                    document.getElementById("dht11Data").innerHTML = "<p>Error fetching data from ThingSpeak.</p>";
+                }
+            }
+    
+            // Call the function to fetch ThingSpeak data
+            fetchThingSpeakData();
+        </script>
+    </body>
+    </html>
